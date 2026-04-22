@@ -1,0 +1,65 @@
+run:
+  name: tictactoe_run_001
+  seed: 42
+  checkpoint_dir: ./checkpoints/tictactoe_run_001
+  log_dir: ./logs/tictactoe_run_001
+  mode: train
+
+game:
+  name: tictactoe
+  params: {}
+
+umcts:
+  M_s: 40
+  d_max: 9
+  c_ucb: 1.25
+  dirichlet_alpha: 0.3
+  dirichlet_frac: 0.25
+  rollout_enabled: true
+
+nn:
+  hidden_dim: 32
+  representation:
+    conv_channels: [16]
+    conv_kernel: 2
+    mlp_hidden: [64]
+    activation: relu
+  dynamics:
+    mlp_hidden: [64, 64]
+    activation: relu
+  prediction:
+    mlp_hidden: [64]
+    activation: relu
+  init_scale: 1.0
+
+training:
+  N_e: 300
+  N_es: 9
+  I_t: 8
+  gradient_steps_per_training: 16
+  mbs: 32
+  q: 1
+  w: 3
+  gamma: 1.0
+  n_step: 9
+  optimizer:
+    name: adamw
+    learning_rate: 0.001
+    weight_decay: 0.0001
+    lr_schedule: const
+  loss_weights:
+    lambda_pi: 1.0
+    lambda_v: 1.0
+    lambda_r: 0.5
+  buffer_capacity: 400
+
+logging:
+  plot_every_train_cycles: 2
+  checkpoint_every_episodes: 100
+  log_to_jsonl: true
+
+viz:
+  pygame_enabled: false
+  pygame_fps: 4
+  cell_size_px: 96
+  window_title: TicTacToe

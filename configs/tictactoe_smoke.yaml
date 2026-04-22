@@ -1,0 +1,65 @@
+run:
+  name: tictactoe_smoke
+  seed: 0
+  checkpoint_dir: ./checkpoints/tictactoe_smoke
+  log_dir: ./logs/tictactoe_smoke
+  mode: train
+
+game:
+  name: tictactoe
+  params: {}
+
+umcts:
+  M_s: 8
+  d_max: 5
+  c_ucb: 1.25
+  dirichlet_alpha: 0.3
+  dirichlet_frac: 0.25
+  rollout_enabled: true
+
+nn:
+  hidden_dim: 8
+  representation:
+    conv_channels: [4]
+    conv_kernel: 2
+    mlp_hidden: [16]
+    activation: relu
+  dynamics:
+    mlp_hidden: [16]
+    activation: relu
+  prediction:
+    mlp_hidden: [16]
+    activation: relu
+  init_scale: 1.0
+
+training:
+  N_e: 3
+  N_es: 9
+  I_t: 2
+  gradient_steps_per_training: 2
+  mbs: 4
+  q: 1
+  w: 2
+  gamma: 1.0
+  n_step: 9
+  optimizer:
+    name: adamw
+    learning_rate: 0.001
+    weight_decay: 0.0001
+    lr_schedule: const
+  loss_weights:
+    lambda_pi: 1.0
+    lambda_v: 1.0
+    lambda_r: 0.5
+  buffer_capacity: 10
+
+logging:
+  plot_every_train_cycles: 1
+  checkpoint_every_episodes: 2
+  log_to_jsonl: true
+
+viz:
+  pygame_enabled: false
+  pygame_fps: 4
+  cell_size_px: 64
+  window_title: TicTacToeSmoke
