@@ -51,10 +51,14 @@ def _random_debris_row(cols: int, density: float, rng: np.random.Generator) -> n
     return (rng.random(cols) < density).astype(bool)
 
 
-def _initial_receptors(cols: int, num_segments: int) -> tuple[tuple[int, int], ...]:
-    # Evenly space num_segments receptors across cols, each ~floor(cols / (2 * num_segments)).
-    seg_len = max(1, cols // (2 * num_segments))
-    gap = max(1, (cols - num_segments * seg_len) // max(1, num_segments))
+def _initial_receptors(cols: int, num_segments: int,
+                        seg_len: int | None = None) -> tuple[tuple[int, int], ...]:
+    # If seg_len is not supplied, default to cols // (2 * num_segments) like before.
+    if seg_len is None:
+        seg_len = max(1, cols // (2 * num_segments))
+    seg_len = int(seg_len)
+    total = seg_len * num_segments
+    gap = max(1, (cols - total) // max(1, num_segments))
     out: list[tuple[int, int]] = []
     pos = 0
     for _ in range(num_segments):
@@ -122,13 +126,15 @@ def _score_row(debris_bottom: np.ndarray,
 class BitFallSimWorld(SimWorld):
     def __init__(self, grid_rows: int = 6, grid_cols: int = 6,
                  num_receptor_segments: int = 3, debris_density: float = 0.4,
-                 horizon: int = 60, reward_scale: float = 1.0):
+                 horizon: int = 60, reward_scale: float = 1.0,
+                 receptor_length: int | None = None):
         self._rows = int(grid_rows)
         self._cols = int(grid_cols)
         self._num_segments = int(num_receptor_segments)
         self._density = float(debris_density)
         self._horizon = int(horizon)
         self._reward_scale = float(reward_scale)
+        self._receptor_length = receptor_length
 
     # --- static descriptors ---
     @property
@@ -153,7 +159,8 @@ class BitFallSimWorld(SimWorld):
         # Prefill a few rows with random debris so the game starts with something to do.
         for r in range(self._rows - 1):
             debris[r] = _random_debris_row(self._cols, self._density, rng)
-        receptors = _initial_receptors(self._cols, self._num_segments)
+        receptors = _initial_receptors(self._cols, self._num_segments,
+                                        seg_len=self._receptor_length)
         return BitFallState(debris=debris, receptors=receptors, step=0, score=0.0, rng_state=rng)
 
     def step(self, state: BitFallState, action: int) -> tuple[BitFallState, float, bool]:
