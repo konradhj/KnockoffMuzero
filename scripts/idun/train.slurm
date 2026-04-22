@@ -3,7 +3,7 @@
 #   sbatch --export=CONFIG=configs/bitfall_big.yaml scripts/idun/train.slurm
 # or edit the CONFIG line below.
 #
-#SBATCH --account=ie-idi
+#SBATCH --account=share-ie-idi
 #SBATCH --job-name=muzero-train
 #SBATCH --time=0-02:00:00
 #SBATCH --partition=GPUQ

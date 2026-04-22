@@ -4,7 +4,7 @@
 #   sbatch --export=CONFIG=configs/bitfall_big.yaml,CKPT=checkpoints/bitfall_big/final.eqx,EPISODES=200 \
 #          scripts/idun/evaluate.slurm
 #
-#SBATCH --account=ie-idi
+#SBATCH --account=share-ie-idi
 #SBATCH --job-name=muzero-eval
 #SBATCH --time=0-00:45:00
 #SBATCH --partition=CPUQ

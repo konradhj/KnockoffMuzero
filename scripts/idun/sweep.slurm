@@ -4,7 +4,7 @@
 #   N=$(ls configs/sweep/*.yaml | wc -l)
 #   sbatch --array=0-$((N-1)) scripts/idun/sweep.slurm
 #
-#SBATCH --account=ie-idi
+#SBATCH --account=share-ie-idi
 #SBATCH --job-name=muzero-sweep
 #SBATCH --time=0-02:00:00
 #SBATCH --partition=CPUQ

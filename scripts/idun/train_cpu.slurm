@@ -4,7 +4,7 @@
 #
 #   sbatch --export=CONFIG=configs/bitfall_big.yaml scripts/idun/train_cpu.slurm
 #
-#SBATCH --account=ie-idi
+#SBATCH --account=share-ie-idi
 #SBATCH --job-name=muzero-train-cpu
 #SBATCH --time=0-03:00:00
 #SBATCH --partition=CPUQ
