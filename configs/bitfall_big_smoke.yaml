@@ -1,0 +1,74 @@
+run:
+  name: bitfall_big_smoke
+  seed: 42
+  checkpoint_dir: ./checkpoints/bitfall_big_smoke
+  log_dir: ./logs/bitfall_big_smoke
+  mode: train
+
+game:
+  name: bitfall
+  params:
+    grid_rows: 8
+    grid_cols: 8
+    num_receptor_segments: 1
+    debris_density: 0.35
+    horizon: 80
+    reward_scale: 0.25
+
+umcts:
+  M_s: 24
+  d_max: 4
+  c_ucb: 1.25
+  dirichlet_alpha: 0.3
+  dirichlet_frac: 0.25
+  rollout_enabled: false
+
+nn:
+  hidden_dim: 48
+  representation:
+    conv_channels: [16]
+    conv_kernel: 3
+    mlp_hidden: [96]
+    activation: relu
+  dynamics:
+    mlp_hidden: [96, 96]
+    activation: relu
+  prediction:
+    mlp_hidden: [96]
+    activation: relu
+  init_scale: 1.0
+
+training:
+  N_e: 10
+  N_es: 30
+  I_t: 2
+  gradient_steps_per_training: 4
+  mbs: 16
+  q: 2
+  w: 4
+  gamma: 0.97
+  n_step: 6
+  optimizer:
+    name: adamw
+    learning_rate: 0.001
+    weight_decay: 0.0001
+    lr_schedule: const
+  loss_weights:
+    lambda_pi: 1.0
+    lambda_v: 0.5
+    lambda_r: 1.0
+  buffer_capacity: 20
+  policy_target_temperature: 0.5
+  q_policy_mix: 0.0
+  q_policy_temperature: 0.5
+
+logging:
+  plot_every_train_cycles: 1
+  checkpoint_every_episodes: 10
+  log_to_jsonl: true
+
+viz:
+  pygame_enabled: false
+  pygame_fps: 10
+  cell_size_px: 36
+  window_title: BitFall (big smoke)

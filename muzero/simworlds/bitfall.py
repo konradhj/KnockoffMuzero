@@ -101,14 +101,10 @@ def _score_row(debris_bottom: np.ndarray,
                receptors: tuple[tuple[int, int], ...]) -> float:
     """Compare each receptor segment to the debris bits directly beneath it.
 
-    Rule (simplified from PDF Fig. 3): for each receptor segment of length R at [s, s+R):
-      - let D = number of debris bits set in that span
-      - if R > D and D >= 1: receptor wins, +D points (we score the losing side's size)
-      - if D > R: debris wins, -R points
-      - else (D == R or D == 0): 0 points
-    Contiguous debris segments that extend past the receptor edges also invoke negative
-    scoring. For simplicity, we only consider the span under each receptor; this captures
-    the dominant signal and keeps the reward function deterministic and bounded.
+    Monotonic rule: each debris bit under a receptor scores +1; each debris bit
+    outside any receptor scores -0.5. This makes "catch more debris" strictly
+    better than "catch less", which in turn makes positioning decisions matter.
+    (The PDF's original D==R tie rule zeroed the signal in simple setups.)
     """
     total = 0.0
     cols = debris_bottom.shape[0]
@@ -116,16 +112,10 @@ def _score_row(debris_bottom: np.ndarray,
     for start, length in receptors:
         end = min(start + length, cols)
         span = debris_bottom[start:end]
-        R = end - start
-        D = int(span.sum())
-        if R > D and D >= 1:
-            total += float(D)  # receptor wins, reward = losing (debris) size
-        elif D > R:
-            total -= float(R)  # debris wins, penalty = losing (receptor) size
+        total += float(span.sum())       # +1 per caught debris bit
         used_mask[start:end] = True
-    # Any debris outside receptor spans contributes a small negative (missed debris).
     missed = int(debris_bottom[~used_mask].sum())
-    total -= 0.25 * float(missed)
+    total -= 0.5 * float(missed)         # -0.5 per uncaught debris bit
     return total
 
 

@@ -66,6 +66,60 @@ JAX_PLATFORMS=cpu python -m muzero.main \
 
 Outputs go to `logs/<run_name>/` (training_dashboard.png, run.jsonl, demo_tree.png) and `checkpoints/<run_name>/` (.eqx files).
 
+## Evaluation / baselines
+
+After training, compare the learned agent against random and always-stay baselines:
+
+```bash
+JAX_PLATFORMS=cpu python scripts/evaluate.py \
+    --config configs/bitfall.yaml \
+    --checkpoint checkpoints/bitfall/final.eqx \
+    --episodes 100
+```
+
+Reports mean/std/min/max return per policy (`random`, `stay`, `actor` = NN_r+NN_p greedy, `mcts` = full tree search). Use this table in the video.
+
+## Running on IDUN (NTNU HPC cluster)
+
+One-time setup on an IDUN login node:
+
+```bash
+ssh konradj@idun.hpc.ntnu.no
+cd /cluster/home/konradj   # or wherever you clone the repo
+git clone <this repo>       # or rsync from your laptop
+cd KnockoffMuzero
+bash scripts/idun/setup_env.sh     # creates conda env 'it3105-jax' once
+```
+
+Submit a training job:
+
+```bash
+# Default: trains configs/bitfall_big.yaml on a GPU node (2 h wall-time).
+sbatch scripts/idun/train.slurm
+
+# Override the config via env var:
+sbatch --export=CONFIG=configs/bitfall.yaml scripts/idun/train.slurm
+
+# CPU-only variant (often faster for small nets because MCTS is the bottleneck):
+sbatch --export=CONFIG=configs/bitfall.yaml scripts/idun/train_cpu.slurm
+
+# Array job across a sweep of configs (drop configs into configs/sweep/ first):
+N=$(ls configs/sweep/*.yaml | wc -l)
+sbatch --array=0-$((N-1)) scripts/idun/sweep.slurm
+
+# Evaluate a checkpoint:
+sbatch --export=CONFIG=configs/bitfall.yaml,CKPT=checkpoints/bitfall/final.eqx,EPISODES=200 \
+       scripts/idun/evaluate.slurm
+
+# Queue inspection:
+squeue -u konradj
+scancel <JOBID>
+```
+
+Slurm stdout/stderr go to `logs/slurm/<job>_<id>.out|.err`. Training artifacts (checkpoints + `run.jsonl` + `training_dashboard.png`) go to `checkpoints/<run>/` and `logs/<run>/` as usual.
+
+**Note on GPU speedup**: u-MCTS runs in pure Python (small M_s per move, tight loop with many small NN forward passes). GPU helps the BPTT training step by 5–10×, but MCTS itself dominates wall-clock time. Use the CPU queue unless you're training a big network or large batch.
+
 ## Tests
 
 ```bash
