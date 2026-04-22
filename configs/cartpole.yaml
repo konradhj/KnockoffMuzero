@@ -1,0 +1,75 @@
+run:
+  name: cartpole
+  seed: 42
+  checkpoint_dir: ./checkpoints/cartpole
+  log_dir: ./logs/cartpole
+  mode: train
+
+game:
+  name: gym
+  params:
+    env_id: CartPole-v1
+    max_episode_steps: 500
+    # CartPole gives +1 per step alive. Over a 500-step episode this gives a
+    # return of up to 500, which is huge for value MSE. Scale 0.01 => target
+    # magnitudes in [0, 5].
+    reward_scale: 0.01
+
+umcts:
+  M_s: 50
+  d_max: 8
+  c_ucb: 1.25
+  dirichlet_alpha: 0.25
+  dirichlet_frac: 0.25
+  rollout_enabled: false
+
+nn:
+  hidden_dim: 64
+  representation:
+    # Vector state (4,) -> no conv. MLP path is used because len(state_shape)==1.
+    conv_channels: []
+    conv_kernel: 1
+    mlp_hidden: [128, 128]
+    activation: relu
+  dynamics:
+    mlp_hidden: [128, 128]
+    activation: relu
+  prediction:
+    mlp_hidden: [128]
+    activation: relu
+  init_scale: 1.0
+
+training:
+  N_e: 300
+  N_es: 500
+  I_t: 4
+  gradient_steps_per_training: 40
+  mbs: 64
+  q: 2
+  w: 5
+  gamma: 0.99
+  n_step: 10
+  optimizer:
+    name: adamw
+    learning_rate: 0.0015
+    weight_decay: 0.0001
+    lr_schedule: const
+  loss_weights:
+    lambda_pi: 1.0
+    lambda_v: 0.5
+    lambda_r: 1.0
+  buffer_capacity: 200
+  policy_target_temperature: 0.5
+  q_policy_mix: 0.0
+  q_policy_temperature: 0.5
+
+logging:
+  plot_every_train_cycles: 2
+  checkpoint_every_episodes: 50
+  log_to_jsonl: true
+
+viz:
+  pygame_enabled: false
+  pygame_fps: 30
+  cell_size_px: 64
+  window_title: CartPole-v1
